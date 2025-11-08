@@ -1,6 +1,7 @@
 package xland.s7c7icu.client.api;
 
-import xland.s7c7icu.client.Identifiable;
+public interface Salter {
+    SalterType<?> type();
 
-public interface Salter extends Identifiable {
+    // outside the Hashing wrapper
 }
