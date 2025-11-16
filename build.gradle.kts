@@ -29,6 +29,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:26.0.1")
 //    implementation("org.bouncycastle:bcprov-jdk18on:1.82")
     implementation("org.json:json:20250517")
+    implementation("software.pando.crypto:salty-coffee:1.1.1")
 }
 
 object Constants {
@@ -41,6 +42,7 @@ tasks.shadowJar {
     addMultiReleaseAttribute.set(true)
 //    relocate("org.bouncycastle", "${Constants.INTERNAL_PACKAGE}.bouncycastle")
     relocate("org.json", "${Constants.INTERNAL_PACKAGE}.json")
+    relocate("software.pando.crypto.nacl", "${Constants.INTERNAL_PACKAGE}.nacl")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
