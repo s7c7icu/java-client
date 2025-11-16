@@ -18,12 +18,12 @@ public enum BuiltinAlgorithm implements Algorithm {
     AES("aes", UnaryOperator.identity(), UnaryOperator.identity()) {
         @Override
         public OutputStream mapOutput(OutputStream wrapped, byte[] rawPassword) {
-            return new Salsa20Key(rawPassword).wrapOutput(wrapped);
+            return SodiumChloride.wrap(wrapped, rawPassword);
         }
 
         @Override
         public InputStream mapInput(InputStream wrapped, byte[] rawPassword) {
-            return new Salsa20Key(rawPassword).wrapInput(wrapped);
+            return SodiumChloride.wrap(wrapped, rawPassword);
         }
     };
 
