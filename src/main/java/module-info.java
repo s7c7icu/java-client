@@ -11,7 +11,7 @@ import xland.s7c7icu.client.spi.*;
 @ParametersAreNonnullByDefault
 open module s7c7icu.javaclient {
     requires static org.jetbrains.annotations;
-    requires static org.bouncycastle.provider;
+//    requires static org.bouncycastle.provider;
     requires java.net.http;
     requires static org.json;
 
