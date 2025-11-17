@@ -2,7 +2,6 @@ package xland.s7c7icu.client.api;
 
 import java.io.FilterInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 
 public abstract class HasherInputStream extends FilterInputStream {
     protected HasherInputStream(InputStream in) {
@@ -17,7 +16,7 @@ public abstract class HasherInputStream extends FilterInputStream {
 
     public final boolean matchesHash(byte[] expected) {
         byte[] computedHash = getHash();
-        return Arrays.equals(computedHash, expected);
+        return java.security.MessageDigest.isEqual(computedHash, expected);
     }
 
     public final boolean matchesHash(String expected) {
