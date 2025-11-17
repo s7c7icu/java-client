@@ -39,10 +39,13 @@ object Constants {
 
 tasks.shadowJar {
     minimizeJar.set(true)
-    addMultiReleaseAttribute.set(true)
-//    relocate("org.bouncycastle", "${Constants.INTERNAL_PACKAGE}.bouncycastle")
     relocate("org.json", "${Constants.INTERNAL_PACKAGE}.json")
     relocate("software.pando.crypto.nacl", "${Constants.INTERNAL_PACKAGE}.nacl")
+
+    from(project.sourceSets.main.map { it.output }) {
+        // Important for SPI registration
+        include("module-info.class")
+    }
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

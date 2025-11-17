@@ -1,5 +1,7 @@
 package xland.s7c7icu.client.api;
 
+import xland.s7c7icu.client.api.json.JsonElement;
+import xland.s7c7icu.client.api.json.JsonObject;
 import xland.s7c7icu.client.internal.SneakyThrow;
 
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public sealed interface FileDataInfo {
@@ -29,6 +32,8 @@ public sealed interface FileDataInfo {
             return "raw";
         }
     }
+
+    Raw EMPTY = new Raw("");
 
     record Base64(String value) implements FileDataInfo {
         @Override
@@ -88,11 +93,11 @@ public sealed interface FileDataInfo {
         }
     }
 
-    static FileDataInfo fromJsonObject(org.json.JSONObject obj) {
-        String s;
-        if ((s = obj.optString("fetch", null)) != null) return new Fetch(s);
-        if ((s = obj.optString("base64", null)) != null) return new Base64(s);
-        if ((s = obj.optString("raw", null)) != null) return new Raw(s);
-        return new Raw("");
+    static FileDataInfo fromJsonObject(JsonObject obj) {
+        return Optional.<FileDataInfo>empty()
+                .or(() -> obj.get("fetch").flatMap(JsonElement::asString).map(Fetch::new))
+                .or(() -> obj.get("base64").flatMap(JsonElement::asString).map(Base64::new))
+                .or(() -> obj.get("raw").flatMap(JsonElement::asString).map(Raw::new))
+                .orElse(EMPTY);
     }
 }

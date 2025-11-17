@@ -11,13 +11,13 @@ import xland.s7c7icu.client.spi.*;
 @ParametersAreNonnullByDefault
 open module s7c7icu.javaclient {
     requires static org.jetbrains.annotations;
-//    requires static org.bouncycastle.provider;
     requires java.net.http;
     requires static org.json;
     requires static software.pando.crypto.nacl;
 
     exports xland.s7c7icu.client;
     exports xland.s7c7icu.client.api;
+    exports xland.s7c7icu.client.api.json;
     exports xland.s7c7icu.client.spi;
 
     uses AlgorithmProvider;
