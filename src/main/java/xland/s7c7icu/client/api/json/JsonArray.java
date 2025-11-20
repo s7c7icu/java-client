@@ -19,6 +19,11 @@ public sealed interface JsonArray extends JsonElement, Iterable<JsonElement> per
         return arr;
     }
 
+    static JsonArray read(java.io.Reader reader) throws java.io.IOException, JsonException {
+        return JsonReader.create(reader).nextArray();
+        // not closing the JsonReader is acceptable because it actually closes the Reader
+    }
+
     void add(@NotNull JsonElement element);
     int size();
     JsonElement get(int index);

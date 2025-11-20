@@ -1,11 +1,11 @@
 package xland.s7c7icu.client.api;
 
-import java.io.FilterInputStream;
-import java.io.InputStream;
+import java.io.FilterOutputStream;
+import java.io.OutputStream;
 
-public abstract class HasherInputStream extends FilterInputStream {
-    protected HasherInputStream(InputStream in) {
-        super(in);
+public abstract class HasherOutputStream extends FilterOutputStream {
+    public HasherOutputStream(OutputStream out) {
+        super(out);
     }
 
     public abstract byte[] getHash();

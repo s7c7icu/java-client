@@ -213,22 +213,29 @@ public final class JsonElementImpl {
 
         @Override
         public @NotNull Iterator<Map.Entry<String, JsonElement>> iterator() {
-            return new DelegateIterator<>(obj.keys(), s -> new Map.Entry<>() {
+            final class Entry implements Map.Entry<String, JsonElement> {
+                private final String key;
+
+                Entry(String k) {
+                    this.key = k;
+                }
+
                 @Override
                 public String getKey() {
-                    return s;
+                    return key;
                 }
 
                 @Override
                 public JsonElement getValue() {
-                    return JsonObjectImpl.this.get(s).orElseThrow();
+                    return JsonObjectImpl.this.get(key).orElseThrow();
                 }
 
                 @Override
                 public JsonElement setValue(JsonElement value) {
-                    return JsonObjectImpl.this.put(s, value);
+                    return JsonObjectImpl.this.put(key, value);
                 }
-            });
+            }
+            return new DelegateIterator<>(obj.keys(), Entry::new);
         }
 
         @Override

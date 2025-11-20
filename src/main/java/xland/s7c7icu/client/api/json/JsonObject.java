@@ -14,6 +14,11 @@ public sealed interface JsonObject extends JsonElement, Iterable<Map.Entry<Strin
         return new JsonElementImpl.JsonObjectImpl();
     }
 
+    static JsonObject from(java.io.Reader reader) throws java.io.IOException, JsonException {
+        return JsonReader.create(reader).nextObject();
+        // not closing the JsonReader is acceptable because it actually closes the Reader
+    }
+
     @Nullable JsonElement put(@NotNull String key, JsonElement value);
     Optional<JsonElement> get(@NotNull String key);
     @Nullable JsonElement remove(@NotNull String key);

@@ -49,6 +49,16 @@ public enum BuiltinHashing implements Hashing {
         public byte[] getHash() {
             return messageDigest.digest();
         }
+
+        @Override
+        public void updateHash(byte[] hash) {
+            messageDigest.update(hash);
+        }
+
+        @Override
+        public void updateHash(byte[] hash, int off, int len) {
+            messageDigest.update(hash, off, len);
+        }
     }
 
     @Override

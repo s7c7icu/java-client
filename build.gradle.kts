@@ -53,4 +53,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    setSourceCompatibility(17)
+    setTargetCompatibility(17)
 }
