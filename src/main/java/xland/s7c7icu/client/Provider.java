@@ -1,5 +1,7 @@
 package xland.s7c7icu.client;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,5 +24,10 @@ public interface Provider<T extends Identifiable> {
         }
 
         return m;
+    }
+
+    static <T extends Identifiable> Optional<? extends T> find(Collection<? extends T> collection, @NotNull String id) {
+        Objects.requireNonNull(id, "id");
+        return collection.stream().filter(t -> id.equals(t.id())).findAny();
     }
 }

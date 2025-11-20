@@ -52,6 +52,11 @@ public enum BuiltinAlgorithm implements Algorithm {
         return id;
     }
 
+    @Override
+    public int availableSinceSchema() {
+        return 0;
+    }
+
     public static final class Provider implements AlgorithmProvider {
         @Override
         public Collection<? extends Algorithm> values() {

@@ -1,16 +1,16 @@
 package xland.s7c7icu.client.impl.salter;
 
-import xland.s7c7icu.client.api.HasherInputStream;
-import xland.s7c7icu.client.api.HasherOutputStream;
-import xland.s7c7icu.client.api.Salter;
-import xland.s7c7icu.client.api.SalterType;
+import xland.s7c7icu.client.api.*;
 import xland.s7c7icu.client.api.json.JsonElement;
 import xland.s7c7icu.client.api.json.JsonObject;
 import xland.s7c7icu.client.api.json.JsonString;
 import xland.s7c7icu.client.api.json.JsonWriter;
+import xland.s7c7icu.client.impl.json.JsonElementImpl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @SuppressWarnings("ClassCanBeRecord")
@@ -36,14 +36,26 @@ final class PostAppend implements Salter {
         return TYPE;
     }
 
+
     @Override
-    public HasherInputStream wrap(HasherInputStream original) {
-        original.updateHash(this.salt());
-        return original;
+    // fixme: cannot reuse EmptySalter under this module
+    public HasherInputStream calculateInput(InputStream originalInput, Map<Hashing, String> hashes) throws IOException {
+        if (hashes.isEmpty()) throw new IllegalArgumentException("Empty hash table");
+        InputStream res = originalInput;
+
+        var entries = hashes.entrySet().iterator();
+        do {
+            final Map.Entry<Hashing, String> entry = entries.next();
+            HasherInputStream hasherWrapped = entry.getKey().wrapInput(res);
+            hasherWrapped.updateHash(this.salt());
+            res = hasherWrapped;
+            // TODO: entry.getValue()??? How to VERIFY while WRAPPING streams together? Or can we simply give up flowing
+        } while (entries.hasNext());
+        return (HasherInputStream) res;
     }
 
     @Override
-    public HasherOutputStream wrap(HasherOutputStream original) {
+    public HasherOutputStream wrapOutput(HasherOutputStream original) {
         original.updateHash(this.salt());
         return original;
     }
@@ -51,7 +63,7 @@ final class PostAppend implements Salter {
     static final SalterType<PostAppend> TYPE = new SalterType<>() {
         @Override
         public PostAppend deserialize(JsonObject obj) {
-            String salt = obj.get("salt").flatMap(JsonElement::asString).orElseThrow(() -> new NoSuchElementException("salt"));
+            String salt = obj.get("salt").flatMap(JsonElement::asString).orElseThrow(JsonElementImpl.keyAbsent("salt"));
             return new PostAppend(salt);
         }
 
@@ -65,6 +77,11 @@ final class PostAppend implements Salter {
         @Override
         public String id() {
             return "s7c7icu:postappend-v0";
+        }
+
+        @Override
+        public int availableSinceSchema() {
+            return 3;
         }
     };
 

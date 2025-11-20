@@ -11,10 +11,10 @@ public record FileInfo(String meta, String slug, byte[] password) {
         password = password.clone();
     }
 
-    public static FileInfo create(String s, @Nullable DownloadContext context) {
-        if (!s.startsWith("s7c7icu://")) throw exception(s);
-        String[] split = s.substring("s7c7icu://".length()).split("/", 3);
-        if (split.length == 1) throw exception(s);
+    public static FileInfo create(String uri, @Nullable DownloadContext context) {
+        if (!uri.startsWith("s7c7icu://")) throw exception(uri);
+        String[] split = uri.substring("s7c7icu://".length()).split("/", 3);
+        if (split.length == 1) throw exception(uri);
 
         String slug = split[0];
         byte[] password = Base64.getDecoder().decode(split[1]);
@@ -22,7 +22,7 @@ public record FileInfo(String meta, String slug, byte[] password) {
         String meta;
         if (split.length == 2) {
             if (context == null || (meta = context.defaultMeta()) == null) {
-                throw new IllegalArgumentException("Missing meta in s7c7icu URI: " + s);
+                throw new IllegalArgumentException("Missing meta in s7c7icu URI: " + uri);
             }
         } else {
             meta = URLDecoder.decode(split[2], StandardCharsets.UTF_8);

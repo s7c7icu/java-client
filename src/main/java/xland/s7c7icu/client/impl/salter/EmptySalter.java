@@ -1,9 +1,12 @@
-package xland.s7c7icu.client.api;
+package xland.s7c7icu.client.impl.salter;
 
+import xland.s7c7icu.client.api.*;
 import xland.s7c7icu.client.api.json.JsonObject;
 import xland.s7c7icu.client.api.json.JsonWriter;
 
-import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public final class EmptySalter implements Salter {
     public static final EmptySalter INSTANCE = new EmptySalter();
@@ -16,13 +19,22 @@ public final class EmptySalter implements Salter {
     }
 
     @Override
-    public HasherInputStream wrap(HasherInputStream original) {
+    public HasherOutputStream wrapOutput(HasherOutputStream original) {
         return original;
     }
 
     @Override
-    public HasherOutputStream wrap(HasherOutputStream original) {
-        return original;
+    public HasherInputStream calculateInput(InputStream originalInput, Map<Hashing, String> hashes) throws IOException {
+        if (hashes.isEmpty()) throw new IllegalArgumentException("Empty hash table");
+        InputStream res = originalInput;
+
+        var entries = hashes.entrySet().iterator();
+        do {
+            final Map.Entry<Hashing, String> entry = entries.next();
+            res = entry.getKey().wrapInput(res);
+            // TODO: entry.getValue()??? How to VERIFY while WRAPPING streams together? Or can we simply give up flowing
+        } while (entries.hasNext());
+        return (HasherInputStream) res;
     }
 
     @Override
@@ -53,6 +65,11 @@ public final class EmptySalter implements Salter {
         @Override
         public String id() {
             return "none";
+        }
+
+        @Override
+        public int availableSinceSchema() {
+            return 0;   // fixme: 0 or 3 for default salter? see compareHashSalted() in JS version
         }
     };
 }

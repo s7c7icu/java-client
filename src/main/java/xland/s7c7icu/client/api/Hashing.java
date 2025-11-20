@@ -1,16 +1,15 @@
 package xland.s7c7icu.client.api;
 
 import xland.s7c7icu.client.Aliased;
+import xland.s7c7icu.client.SinceSchema;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
-public interface Hashing extends Aliased {
+public interface Hashing extends Aliased, SinceSchema {
     HasherInputStream wrapInput(InputStream inputStream) throws IOException;
-
-    default int availableSinceSchema() {
-        return 0;
-    }
+    HasherOutputStream wrapOutput(OutputStream outputStream) throws IOException;
 
     static String toHex(byte[] byteArray) {
         StringBuilder hexString = new StringBuilder();

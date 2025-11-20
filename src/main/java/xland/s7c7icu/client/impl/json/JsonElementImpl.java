@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public final class JsonElementImpl {
     @Contract("null->null;!null->!null")
@@ -293,5 +294,9 @@ public final class JsonElementImpl {
         public boolean equals(Object obj) {
             return obj instanceof JsonString otherStr && stringValue.equals(otherStr.stringValue());
         }
+    }
+
+    public static Supplier<JsonException> keyAbsent(final String key) {
+        return () -> new JsonException("Key absent or invalid: " + key);
     }
 }

@@ -4,9 +4,9 @@ import xland.s7c7icu.client.api.json.JsonElement;
 import xland.s7c7icu.client.api.json.JsonObject;
 import xland.s7c7icu.client.internal.SneakyThrow;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -15,16 +15,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public sealed interface FileDataInfo {
-    CompletableFuture<Void> downloadTo(OutputStream outputStream, DownloadContext context) throws IOException;
+    CompletableFuture<InputStream> openStream(DownloadContext context) throws IOException;
 
     String fieldName();
 
     record Raw(String value) implements FileDataInfo {
         @Override
-        public CompletableFuture<Void> downloadTo(OutputStream outputStream, DownloadContext context) throws IOException {
-            byte[] asUtf8Bytes = this.value().getBytes(StandardCharsets.UTF_8);
-            outputStream.write(asUtf8Bytes);
-            return new CompletableFuture<>();
+        public CompletableFuture<InputStream> openStream(DownloadContext context) {
+            final byte[] bytes = this.value().getBytes(StandardCharsets.UTF_8);
+            return CompletableFuture.completedFuture(new ByteArrayInputStream(bytes));
         }
 
         @Override
@@ -37,10 +36,9 @@ public sealed interface FileDataInfo {
 
     record Base64(String value) implements FileDataInfo {
         @Override
-        public CompletableFuture<Void> downloadTo(OutputStream outputStream, DownloadContext context) throws IOException {
-            byte[] asBytes = java.util.Base64.getDecoder().decode(this.value());
-            outputStream.write(asBytes);
-            return new CompletableFuture<>();
+        public CompletableFuture<InputStream> openStream(DownloadContext context) {
+            final byte[] bytes = java.util.Base64.getDecoder().decode(this.value());
+            return CompletableFuture.completedFuture(new ByteArrayInputStream(bytes));
         }
 
         @Override
@@ -51,14 +49,14 @@ public sealed interface FileDataInfo {
 
     record Fetch(String value) implements FileDataInfo {
         @Override
-        public CompletableFuture<Void> downloadTo(OutputStream outputStream, DownloadContext context) throws IOException {
+        public CompletableFuture<InputStream> openStream(DownloadContext context) throws IOException {
             String value = this.value();
             if (value.startsWith("s7c7icu://")) {
                 if (!context.allowsS7c7icuUri()) {
                     throw new IllegalArgumentException("s7c7icu URIs are not allowed here, but it's present: " + value);
                 }
                 FileInfo fileInfo = FileInfo.create(value, context);
-                return context.download(fileInfo, outputStream);
+                return context.openStream(fileInfo);
             } else {
                 URI uri = URI.create(value);
                 return context.getHttpClient().sendAsync(
@@ -67,17 +65,11 @@ public sealed interface FileDataInfo {
                                 .GET()
                                 .build(),
                         HttpResponse.BodyHandlers.ofInputStream()
-                ).thenAcceptAsync(response -> {
-                    try {
-                        if (isStatusOk(response.statusCode())) {
-                            try (InputStream inputStream = response.body()) {
-                                inputStream.transferTo(outputStream);
-                            }
-                        } else {
-                            throw new IOException("Failed to fetch " + uri);
-                        }
-                    } catch (IOException ex) {
-                        throw SneakyThrow.sneakyThrow(ex);
+                ).thenApplyAsync(response -> {
+                    if (isStatusOk(response.statusCode())) {
+                        return response.body();
+                    } else {
+                        throw SneakyThrow.sneakyThrow(new IOException("Failed to fetch " + uri + ": response code " + response.statusCode()));
                     }
                 });
             }

@@ -1,6 +1,9 @@
 package xland.s7c7icu.client.api;
 
 import org.jetbrains.annotations.Nullable;
+import xland.s7c7icu.client.api.json.JsonException;
+import xland.s7c7icu.client.api.json.JsonObject;
+import xland.s7c7icu.client.impl.FileMetaImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,4 +27,8 @@ public interface FileMeta {
     Salter salter();
 
     Collection<FileFlag> flags();
+
+    static FileMeta deserialize(JsonObject obj, DownloadContext context) throws JsonException {
+        return FileMetaImpl.deserialize(obj, context);
+    }
 }

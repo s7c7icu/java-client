@@ -1,11 +1,14 @@
 package xland.s7c7icu.client.impl;
 
 import xland.s7c7icu.client.api.HasherInputStream;
+import xland.s7c7icu.client.api.HasherOutputStream;
 import xland.s7c7icu.client.api.Hashing;
 import xland.s7c7icu.client.spi.HashingProvider;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.DigestInputStream;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -37,6 +40,11 @@ public enum BuiltinHashing implements Hashing {
         return new DigestInputStreamWrapper(inputStream, mdSupplier.get());
     }
 
+    @Override
+    public HasherOutputStream wrapOutput(OutputStream outputStream) {
+        return new DigestOutputStreamWrapper(outputStream, mdSupplier.get());
+    }
+
     private static final class DigestInputStreamWrapper extends HasherInputStream {
         private final MessageDigest messageDigest;
 
@@ -61,6 +69,30 @@ public enum BuiltinHashing implements Hashing {
         }
     }
 
+    private static final class DigestOutputStreamWrapper extends HasherOutputStream {
+        private final MessageDigest messageDigest;
+
+        DigestOutputStreamWrapper(OutputStream out, MessageDigest messageDigest) {
+            super(new DigestOutputStream(out, messageDigest));
+            this.messageDigest = messageDigest;
+        }
+
+        @Override
+        public byte[] getHash() {
+            return messageDigest.digest();
+        }
+
+        @Override
+        public void updateHash(byte[] hash) {
+            messageDigest.update(hash);
+        }
+
+        @Override
+        public void updateHash(byte[] hash, int off, int len) {
+            messageDigest.update(hash);
+        }
+    }
+
     @Override
     public String id() {
         return this.id;
@@ -79,6 +111,11 @@ public enum BuiltinHashing implements Hashing {
                 throw new IllegalArgumentException("Illegal message digest algorithm: " + identifier, e);
             }
         };
+    }
+
+    @Override
+    public int availableSinceSchema() {
+        return 0;
     }
 
     public static final class Provider implements HashingProvider {
